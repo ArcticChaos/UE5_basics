@@ -56,7 +56,7 @@ void AMyFirstActor::OnBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 			break;
 		}
 	}
-	
+	ActorsInside.Add(OtherActor);
 	/*
 	UWorld* World = GetWorld();
 	if(!IsValid(World))
@@ -86,7 +86,7 @@ void AMyFirstActor::OnEndOverlap(AActor* OverlappedActor, AActor* OtherActor)
 			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, "OUT: "+OtherActor->GetName());
 		}
 	}
-
+	ActorsInside.Remove(OtherActor);
 	/*
 	UWorld* World = GetWorld();
 	if(!IsValid(World))

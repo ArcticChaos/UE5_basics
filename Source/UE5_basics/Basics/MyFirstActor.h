@@ -23,6 +23,10 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta=(DisplayName="Sensed Characters"))
 	TArray<TSubclassOf<AActor>> SensedCharacterClasses = {ACharacter::StaticClass()};
+	
+	// List of actors inside the box component
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta=(DisplayName="Actors Inside"))
+	TArray<AActor*> ActorsInside;
 protected:
 	
 	virtual void BeginPlay() override;

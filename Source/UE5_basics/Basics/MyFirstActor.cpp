@@ -61,15 +61,15 @@ void AMyFirstActor::OnBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 	UClass* OtherActorClass = OtherActor->GetClass();
 	for(auto& SensedClass : SensedCharacterClasses)
 	{
-		if(SensedClass == OtherActorClass || OtherActorClass->IsChildOf(SensedClass))
+		if (SensedClass && (OtherActorClass == SensedClass || OtherActorClass->IsChildOf(SensedClass)))
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, "IN: "+OtherActor->GetName());
-			//OnSomethingEnter();
+			OtherActor->OnDestroyed.AddUniqueDynamic(this, &AMyFirstActor::OnActorInsideDestroyed);
+			ActorsInside.AddUnique(OtherActor);
 			break;
 		}
 	}
-	OtherActor->OnDestroyed.AddUniqueDynamic(this, &AMyFirstActor::OnActorInsideDestroyed);
-	ActorsInside.AddUnique(OtherActor);
+
 }
 
 void AMyFirstActor::OnEndOverlap(AActor* OverlappedActor, AActor* OtherActor)
@@ -82,14 +82,14 @@ void AMyFirstActor::OnEndOverlap(AActor* OverlappedActor, AActor* OtherActor)
 	UClass* OtherActorClass = OtherActor->GetClass();
 	for(auto& SensedClass : SensedCharacterClasses)
 	{
-		if(SensedClass == OtherActorClass || OtherActorClass->IsChildOf(SensedClass))
+		if (SensedClass && (OtherActorClass == SensedClass || OtherActorClass->IsChildOf(SensedClass)))
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, "OUT: "+OtherActor->GetName());
+			OtherActor->OnDestroyed.RemoveDynamic(this, &AMyFirstActor::OnActorInsideDestroyed);
+			ActorsInside.Remove(OtherActor);
+			break;
 		}
 	}
-	OtherActor->OnDestroyed.RemoveDynamic(this, &AMyFirstActor::OnActorInsideDestroyed);
-	ActorsInside.Remove(OtherActor);
-
 }
 
 void AMyFirstActor::OnActorInsideDestroyed(AActor* DestroyedActor)

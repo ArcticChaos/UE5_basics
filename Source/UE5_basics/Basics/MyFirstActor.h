@@ -45,6 +45,7 @@ protected:
 	UFUNCTION()
 	void PrintActorsInside();
 private:
+	bool IsSensedActor(const AActor* Actor) const;
 
 	UFUNCTION()
 	void BindTest();

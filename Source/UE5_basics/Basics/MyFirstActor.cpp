@@ -31,21 +31,13 @@ void AMyFirstActor::BeginPlay()
 	BoxComponent->GetOverlappingActors(OverlappingActors);
 	for (AActor* Actor : OverlappingActors)
 	{
-		if (!IsValid(Actor))
+		if (!IsSensedActor(Actor))
 		{
 			continue;
 		}
 
-		UClass* ActorClass = Actor->GetClass();
-		for (const auto& SensedClass : SensedCharacterClasses)
-		{
-			if (SensedClass && (ActorClass == SensedClass || ActorClass->IsChildOf(SensedClass)))
-			{
-				ActorsInside.AddUnique(Actor);
-				Actor->OnDestroyed.AddUniqueDynamic(this, &AMyFirstActor::OnActorInsideDestroyed);
-				break;
-			}
-		}
+		ActorsInside.AddUnique(Actor);
+		Actor->OnDestroyed.AddUniqueDynamic(this, &AMyFirstActor::OnActorInsideDestroyed);
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Actors inside: %d"), ActorsInside.Num());
 	
@@ -63,43 +55,46 @@ void AMyFirstActor::BeginPlay()
 
 void AMyFirstActor::OnBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
-	if(!IsValid(OtherActor))
+	if (!IsSensedActor(OtherActor))
 	{
 		return;
 	}
 
-	UClass* OtherActorClass = OtherActor->GetClass();
-	for(auto& SensedClass : SensedCharacterClasses)
-	{
-		if (SensedClass && (OtherActorClass == SensedClass || OtherActorClass->IsChildOf(SensedClass)))
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, "IN: "+OtherActor->GetName());
-			OtherActor->OnDestroyed.AddUniqueDynamic(this, &AMyFirstActor::OnActorInsideDestroyed);
-			ActorsInside.AddUnique(OtherActor);
-			break;
-		}
-	}
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, "IN: "+OtherActor->GetName());
+	OtherActor->OnDestroyed.AddUniqueDynamic(this, &AMyFirstActor::OnActorInsideDestroyed);
+	ActorsInside.AddUnique(OtherActor);
 
 }
 
 void AMyFirstActor::OnEndOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
-	if(!IsValid(OtherActor))
+	if (!IsSensedActor(OtherActor))
 	{
 		return;
 	}
 
-	UClass* OtherActorClass = OtherActor->GetClass();
-	for(auto& SensedClass : SensedCharacterClasses)
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, "OUT: "+OtherActor->GetName());
+	OtherActor->OnDestroyed.RemoveDynamic(this, &AMyFirstActor::OnActorInsideDestroyed);
+	ActorsInside.Remove(OtherActor);
+}
+
+bool AMyFirstActor::IsSensedActor(const AActor* Actor) const
+{
+	if (!IsValid(Actor))
 	{
-		if (SensedClass && (OtherActorClass == SensedClass || OtherActorClass->IsChildOf(SensedClass)))
+		return false;
+	}
+
+	const UClass* ActorClass = Actor->GetClass();
+	for (const auto& SensedClass : SensedCharacterClasses)
+	{
+		if (SensedClass && (ActorClass == SensedClass || ActorClass->IsChildOf(SensedClass)))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, "OUT: "+OtherActor->GetName());
-			OtherActor->OnDestroyed.RemoveDynamic(this, &AMyFirstActor::OnActorInsideDestroyed);
-			ActorsInside.Remove(OtherActor);
-			break;
+			return true;
 		}
 	}
+
+	return false;
 }
 
 void AMyFirstActor::OnActorInsideDestroyed(AActor* DestroyedActor)

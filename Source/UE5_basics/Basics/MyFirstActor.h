@@ -25,7 +25,7 @@ public:
 	TArray<TSubclassOf<AActor>> SensedCharacterClasses = {ACharacter::StaticClass()};
 	
 	// List of actors inside the box component
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta=(DisplayName="Actors Inside"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Settings", meta=(DisplayName="Actors Inside"))
 	TArray<AActor*> ActorsInside;
 protected:
 	
@@ -38,10 +38,14 @@ protected:
 
 	UFUNCTION()
 	void OnEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
-
+	
+	UFUNCTION()
+	void OnActorInsideDestroyed(AActor* DestroyedActor);
+	
+	UFUNCTION()
+	void PrintActorsInside();
 private:
 
 	UFUNCTION()
 	void BindTest();
-
 };

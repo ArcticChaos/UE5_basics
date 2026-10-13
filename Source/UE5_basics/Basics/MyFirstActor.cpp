@@ -27,6 +27,12 @@ void AMyFirstActor::BeginPlay()
 	
 	OnActorBeginOverlap.AddDynamic(this, &AMyFirstActor::OnBeginOverlap);
 	OnActorEndOverlap.AddDynamic(this, &AMyFirstActor::OnEndOverlap);
+	
+
+	BoxComponent->UpdateOverlaps();
+	BoxComponent->GetOverlappingActors(ActorsInside);
+	//add a debug loge
+	UE_LOG(LogTemp, Warning, TEXT("Actors inside: %d"), ActorsInside.Num());
 
 	// Bind example
 	/*
@@ -56,7 +62,7 @@ void AMyFirstActor::OnBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 			break;
 		}
 	}
-	ActorsInside.Add(OtherActor);
+	ActorsInside.AddUnique(OtherActor);
 	/*
 	UWorld* World = GetWorld();
 	if(!IsValid(World))

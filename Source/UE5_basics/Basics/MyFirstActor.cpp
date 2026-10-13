@@ -29,8 +29,16 @@ void AMyFirstActor::BeginPlay()
 	BoxComponent->UpdateOverlaps();
 	BoxComponent->GetOverlappingActors(ActorsInside);
 	UE_LOG(LogTemp, Warning, TEXT("Actors inside: %d"), ActorsInside.Num());
-
-
+	
+    // add ondestroyed event when actor is inside
+	for (AActor* Actor : ActorsInside)
+	{
+		if (IsValid(Actor))
+		{
+			// Invece del normale AddDynamic, usiamo AddUniqueDynamic (spiegato sotto)
+			Actor->OnDestroyed.AddUniqueDynamic(this, &AMyFirstActor::OnActorInsideDestroyed);
+		}
+	}
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	if (PC)
 	{
@@ -60,7 +68,7 @@ void AMyFirstActor::OnBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 			break;
 		}
 	}
-	OtherActor->OnDestroyed.AddDynamic(this, &AMyFirstActor::OnActorInsideDestroyed);
+	OtherActor->OnDestroyed.AddUniqueDynamic(this, &AMyFirstActor::OnActorInsideDestroyed);
 	ActorsInside.AddUnique(OtherActor);
 }
 

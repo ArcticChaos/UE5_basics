@@ -20,7 +20,13 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UBoxComponent* BoxComponent;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta=(DisplayName="Sensed Characters"))
+	TArray<TSubclassOf<AActor>> SensedCharacterClasses = {ACharacter::StaticClass()};
+	
+	// List of actors inside the box component
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Settings", meta=(DisplayName="Actors Inside"))
+	TArray<AActor*> ActorsInside;
 protected:
 	
 	virtual void BeginPlay() override;
@@ -32,18 +38,14 @@ protected:
 
 	UFUNCTION()
 	void OnEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
-
-public:
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta=(DisplayName="Sensed Characters"))
-	TArray<TSubclassOf<AActor>> SensedCharacterClasses = {ACharacter::StaticClass()};
-
-	//UFUNCTION(BlueprintImplementableEvent)
-	//void OnSomethingEnter();
-
+	UFUNCTION()
+	void OnActorInsideDestroyed(AActor* DestroyedActor);
+	
+	UFUNCTION()
+	void PrintActorsInside();
 private:
 
 	UFUNCTION()
 	void BindTest();
-
 };

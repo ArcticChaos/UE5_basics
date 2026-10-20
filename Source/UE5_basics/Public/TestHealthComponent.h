@@ -17,7 +17,13 @@ public:
 	UTestHealthComponent();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-	int MaxHealth = 100;
+	float MaxHealth = 100.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	float currentHealth = 0.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float RecoveryAmount = 10.0f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	bool eAutoRecovery = true;
@@ -25,11 +31,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float TimeToStartRecovery = 2.0f;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-	float RecoveryAmount = 10.0f;
 	
 	UPROPERTY(BlueprintAssignable)
-	FHealtTestDelegate OnHealthtoZero;
+	FHealtTestDelegate OnHealthToZero;
 	
 	UPROPERTY(BlueprintAssignable)
 	FHealtTestDelegate OnDamageTaken;
@@ -43,16 +47,16 @@ public:
 	
 	float CurrentRecoveryTimer = 0.0f;
 	
-	UFUNCTION(BlueprintCallable, Category = "Health")	
+	UFUNCTION(BlueprintCallable, Category = "Health")
 	void GetDamage(int amount);
 	
-	UFUNCTION(BlueprintPure)
-	int GetCurrentHealth();
+	UFUNCTION(BlueprintPure, Category = "Health")
+	float GetCurrentHealth() const { return currentHealth; }
+	
+	UFUNCTION(BlueprintPure, Category = "Health")
+	float GetMaxHealth() const { return MaxHealth; }
 	
 	UFUNCTION(BlueprintCallable, Category = "Health")
-	void recoverHealth(int amount);
-	
-private:
-	int currentHealth;
+	void recoverHealth(float amount);
 		
 };

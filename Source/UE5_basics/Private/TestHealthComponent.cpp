@@ -2,9 +2,6 @@
 
 
 #include "TestHealthComponent.h"
-
-#include "MathUtil.h"
-
 // Sets default values for this component's properties
 UTestHealthComponent::UTestHealthComponent()
 {
@@ -58,18 +55,13 @@ void UTestHealthComponent::GetDamage(int amount)
 		
 		if (currentHealth == 0)
 		{
-			OnHealthtoZero.Broadcast();
+			OnHealthToZero.Broadcast();
 		}
 	}
 }
 
-int UTestHealthComponent::GetCurrentHealth()
+void UTestHealthComponent::recoverHealth(float amount)
 {
-	return currentHealth;
-}
-
-void UTestHealthComponent::recoverHealth(int amount)
-{
-	currentHealth = FMath::Clamp(currentHealth + amount, 0, MaxHealth);
+	currentHealth = FMath::Clamp(currentHealth + amount, 0.0f, MaxHealth);
 }
 

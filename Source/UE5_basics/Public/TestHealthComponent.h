@@ -41,6 +41,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
+	float CurrentRecoveryTimer = 0.0f;
+	
 	UFUNCTION(BlueprintCallable, Category = "Health")	
 	void GetDamage(int amount);
 	

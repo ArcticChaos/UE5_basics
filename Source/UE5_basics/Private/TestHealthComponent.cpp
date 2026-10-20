@@ -2,9 +2,6 @@
 
 
 #include "TestHealthComponent.h"
-
-#include "MathUtil.h"
-
 // Sets default values for this component's properties
 UTestHealthComponent::UTestHealthComponent()
 {
@@ -32,39 +29,39 @@ void UTestHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
 	// after TimeToStartRecovery if no damage has been taken, recover health
-	if (TimeToStartRecovery > 0.0f && eAutoRecovery)
+	if (eAutoRecovery && currentHealth < MaxHealth)
 	{
-		TimeToStartRecovery -= DeltaTime;
-		if (TimeToStartRecovery <= 0.0f)
+		if (CurrentRecoveryTimer > 0.0f)
 		{
-			recoverHealth(RecoveryAmount);
+			CurrentRecoveryTimer -= DeltaTime;
+		}
+		else
+		{
+			recoverHealth(RecoveryAmount * DeltaTime); 
 		}
 	}
 }
 
 void UTestHealthComponent::GetDamage(int amount)
 {
-	if (amount < 0)
+	if (amount > 0)
 	{
-		const auto actualDamage = FMathf::Abs(amount);
-		currentHealth = FMath::Clamp(currentHealth - actualDamage, 0, MaxHealth);
+		currentHealth = FMath::Clamp(currentHealth - amount, 0, MaxHealth);
+
+		// damage taken, reset recovery timer
+		CurrentRecoveryTimer = TimeToStartRecovery;
 		
 		OnDamageTaken.Broadcast();
 		
 		if (currentHealth == 0)
 		{
-			OnHealthtoZero.Broadcast();
+			OnHealthToZero.Broadcast();
 		}
 	}
 }
 
-int UTestHealthComponent::GetCurrentHealth()
+void UTestHealthComponent::recoverHealth(float amount)
 {
-	return currentHealth;
-}
-
-void UTestHealthComponent::recoverHealth(int amount)
-{
-	currentHealth = FMath::Clamp(currentHealth + amount, 0, MaxHealth);
+	currentHealth = FMath::Clamp(currentHealth + amount, 0.0f, MaxHealth);
 }
 

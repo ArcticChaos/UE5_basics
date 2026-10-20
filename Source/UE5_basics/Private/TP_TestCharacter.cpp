@@ -181,7 +181,6 @@ void ATP_TestCharacter::AimOut()
 void ATP_TestCharacter::HandleProgressArmLength(float Length)
 {
 	CameraBoom->TargetArmLength = Length;
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT("New camer boom val -> %f"), Length));
 }
 
 void ATP_TestCharacter::HandleProgressCameraOffset(FVector Offset) {

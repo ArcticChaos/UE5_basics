@@ -2,6 +2,7 @@
 
 
 #include "TP_TestCharacter.h"
+#include "TagBall.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "TestHealthComponent.h"
@@ -10,7 +11,8 @@
 #include "Components/TimelineComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "UE5_basics/Other/HealthComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "UE5_basics/Enemy/Enemy.h"
 class UEnhancedInputLocalPlayerSubsystem;
 // Sets default values
 ATP_TestCharacter::ATP_TestCharacter()
@@ -48,6 +50,9 @@ ATP_TestCharacter::ATP_TestCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false;
 	
+	StartFire = CreateDefaultSubobject<USceneComponent>(TEXT("StartTrace"));
+	StartFire->SetupAttachment(RootComponent);
+	
 	HealthComponent = CreateDefaultSubobject<UTestHealthComponent>(TEXT("Health Component"));
 }
 
@@ -72,6 +77,69 @@ void ATP_TestCharacter::BeginPlay()
 		ProgressFunctionOffset.BindUFunction(this, "HandleProgressCameraOffset");
 		AimTimeline.AddInterpVector(OffsetCurve, ProgressFunctionOffset);
 	}
+}
+
+void ATP_TestCharacter::FireFromWeapon()
+{
+	UWorld* World = GetWorld();
+	if (!IsValid(World) || !IsValid(StartFire))
+	{
+		return;
+	}
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	// La palla non deve intercettare il trace del portatore.
+	if (IsValid(HeldBall))
+	{
+		Params.AddIgnoredActor(HeldBall);
+	}
+
+	const FVector Start = StartFire->GetComponentLocation();
+	const FVector Direction = StartFire->GetForwardVector();
+	const FVector End = Start + Direction * 2000.0f;
+
+	FHitResult Hit;
+	const bool bHit = World->LineTraceSingleByChannel(
+		Hit, Start, End, ECC_Visibility, Params);
+
+	DrawDebugLine(World, Start, End, FColor::Red, false, 1.0f, 0, 1.0f);
+
+	if (!bHit)
+	{
+		return;
+	}
+
+	AActor* HitActor = Hit.GetActor();
+	if (!IsValid(HitActor))
+	{
+		return;
+	}
+
+	ATP_TestCharacter* HitPlayer = Cast<ATP_TestCharacter>(HitActor);
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("Hit %s"), *HitActor->GetName()));
+	if (IsValid(HitPlayer) && HitPlayer != this &&
+		IsValid(HitPlayer->HeldBall))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("Stealing ball from %s"), *HitPlayer->GetName()));
+		HitPlayer->HeldBall->GiveTo(this);
+	}
+
+	// Mantiene il comportamento esistente, incluso HitCounter.
+	HitActor->OnActorHit.Broadcast(
+		HitActor, this, FVector::ZeroVector, Hit);
+}
+
+void ATP_TestCharacter::TryStealBall()
+{
+	// Un solo trace: non duplicare la logica dello sparo.
+	FireFromWeapon();
+}
+
+bool ATP_TestCharacter::HasBall() const
+{
+	return IsValid(HeldBall);
 }
 
 // Called every frame

@@ -11,8 +11,9 @@
 #include "InputAction.h"
 #include "InputMappingContext.h"
 #include "TestHealthComponent.h"
-#include "UE5_basics/Other/HealthComponent.h"
 #include "TP_TestCharacter.generated.h"
+
+class ATagBall;
 
 UCLASS()
 class UE5_BASICS_API ATP_TestCharacter : public ACharacter
@@ -41,6 +42,9 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health")
 	UTestHealthComponent* HealthComponent;	
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Fire")
+	USceneComponent* StartFire;
 
 protected:
 	// Called when the game starts or when spawned
@@ -73,6 +77,17 @@ protected:
 	/** Mouse Look Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* AimAction;
+	
+	UFUNCTION(BlueprintCallable, Category="Input")
+	void FireFromWeapon();	
+	
+	UFUNCTION(BlueprintCallable, Category="Ball")
+	void TryStealBall();
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Ball")
+	ATagBall* HeldBall = nullptr;
+
+	friend class ATagBall;
 
 public:	
 	// Called every frame
@@ -99,6 +114,9 @@ public:
 	/** Handles jump pressed inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
+	
+	UFUNCTION(BlueprintPure, Category = "Ball")
+	bool HasBall() const;
 
 private:
 	UFUNCTION()

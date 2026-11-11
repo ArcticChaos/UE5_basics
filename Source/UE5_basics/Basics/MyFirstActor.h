@@ -20,6 +20,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UBoxComponent* BoxComponent;
+	
+	void TimerCallback();
 
 protected:
 	

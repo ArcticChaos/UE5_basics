@@ -96,6 +96,8 @@ protected:
 	
 	void CrouchCharacter();
 	void StopCrouchCharacter();
+	void ToggleCover();
+	void ExitFromCover();
 
 public:	
 	// Called every frame

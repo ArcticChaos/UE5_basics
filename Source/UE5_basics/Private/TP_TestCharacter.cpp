@@ -278,29 +278,29 @@ void ATP_TestCharacter::StopCrouchCharacter() {
 }
 
 void ATP_TestCharacter::ToggleCover() {
-	bool bIsNear = CheckAroundMe(CheckCoverRadius);
-	if (bIsNear) { // Check if cover is near
-		bIsInCover = !bIsInCover;
-		// DEBUG message
-		if (bIsInCover) {
-			GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Cover now!"));
-		} else {
-			GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Not Cover now!"));
-		}
-		
-		if (bIsInCover && Cover) {			
-			FRotator CoverRotation;
-			Cover->RetrieveMovementDirectionAndFacingRotation(CoverDirectionMovement, CoverRotation);
-			SetActorRotation(CoverRotation);
-			CrouchCharacter();
-		} else {
-			ExitFromCover();
-		}
-	}
+	// bool bIsNear = CheckAroundMe(CheckCoverRadius);
+	// if (bIsNear) { // Check if cover is near
+	// 	bIsInCover = !bIsInCover;
+	// 	// DEBUG message
+	// 	if (bIsInCover) {
+	// 		GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Cover now!"));
+	// 	} else {
+	// 		GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Not Cover now!"));
+	// 	}
+	// 	
+	// 	if (bIsInCover && Cover) {			
+	// 		FRotator CoverRotation;
+	// 		Cover->RetrieveMovementDirectionAndFacingRotation(CoverDirectionMovement, CoverRotation);
+	// 		SetActorRotation(CoverRotation);
+	// 		CrouchCharacter();
+	// 	} else {
+	// 		ExitFromCover();
+	// 	}
+	// }
 }
 
 void ATP_TestCharacter::ExitFromCover() {
-	bIsInCover = false;
-	StopCrouchCharacter();
+	// bIsInCover = false;
+	// StopCrouchCharacter();
 }
 

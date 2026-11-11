@@ -171,6 +171,9 @@ void ATP_TestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ATP_TestCharacter::Look);
+		
+		// Crouching
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &ATP_TestCharacter::ToggleCover);
 	}
 }
 
@@ -253,5 +256,51 @@ void ATP_TestCharacter::HandleProgressArmLength(float Length)
 
 void ATP_TestCharacter::HandleProgressCameraOffset(FVector Offset) {
 	CameraBoom->SocketOffset = Offset;
+}
+
+void ATP_TestCharacter::CrouchCharacter() {
+	
+	if (CanCrouch()) {
+		GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Crouch in"));
+		Crouch();
+		CrouchTimeline.Play();
+		OnCharacterCrouch.Broadcast();
+	}
+}
+
+void ATP_TestCharacter::StopCrouchCharacter() {
+	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Uncrouch"));
+	if (GetCharacterMovement()->IsCrouching()) {
+		UnCrouch();
+		CrouchTimeline.Reverse();
+		OnCharacterUncrouch.Broadcast();
+	}
+}
+
+void ATP_TestCharacter::ToggleCover() {
+	bool bIsNear = CheckAroundMe(CheckCoverRadius);
+	if (bIsNear) { // Check if cover is near
+		bIsInCover = !bIsInCover;
+		// DEBUG message
+		if (bIsInCover) {
+			GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Cover now!"));
+		} else {
+			GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Not Cover now!"));
+		}
+		
+		if (bIsInCover && Cover) {			
+			FRotator CoverRotation;
+			Cover->RetrieveMovementDirectionAndFacingRotation(CoverDirectionMovement, CoverRotation);
+			SetActorRotation(CoverRotation);
+			CrouchCharacter();
+		} else {
+			ExitFromCover();
+		}
+	}
+}
+
+void ATP_TestCharacter::ExitFromCover() {
+	bIsInCover = false;
+	StopCrouchCharacter();
 }
 

@@ -11,6 +11,7 @@
 #include "InputAction.h"
 #include "InputMappingContext.h"
 #include "TestHealthComponent.h"
+#include "UE5_basics/TP_Character/TP_Character.h"
 #include "TP_TestCharacter.generated.h"
 
 class ATagBall;
@@ -78,6 +79,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* AimAction;
 	
+	/** Crouch Input Action */
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* CrouchAction;
+	
 	UFUNCTION(BlueprintCallable, Category="Input")
 	void FireFromWeapon();	
 	
@@ -88,6 +93,9 @@ protected:
 	ATagBall* HeldBall = nullptr;
 
 	friend class ATagBall;
+	
+	void CrouchCharacter();
+	void StopCrouchCharacter();
 
 public:	
 	// Called every frame
@@ -124,5 +132,12 @@ private:
 	
 	UFUNCTION()
 	void HandleProgressCameraOffset(FVector Offset);
-
+	
+	FTimeline CrouchTimeline;
+	
+	UPROPERTY(BlueprintAssignable)
+	FGameStateCharacter OnCharacterCrouch;
+	
+	UPROPERTY(BlueprintAssignable)
+	FGameStateCharacter OnCharacterUncrouch;
 };

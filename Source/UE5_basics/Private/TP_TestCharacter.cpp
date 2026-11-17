@@ -67,6 +67,10 @@ void ATP_TestCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+	if (IsValid(HealthComponent))
+	{
+		HealthComponent->OnHealthToZero.AddDynamic(this, &ATP_TestCharacter::HandleStaminaDepleted);
+	}
 	if (MovementCurve && OffsetCurve) 
 	{
 		FOnTimelineFloat ProgressFunctionLength;
@@ -86,6 +90,14 @@ void ATP_TestCharacter::FireFromWeapon()
 	{
 		return;
 	}
+
+	const float StaminaCost = FMath::Max(0.0f, AttackStaminaCost);
+	if (!IsValid(HealthComponent) || !HealthComponent->HasStamina(StaminaCost))
+	{
+		return;
+	}
+
+	HealthComponent->ConsumeStamina(StaminaCost);
 
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);
@@ -126,6 +138,12 @@ void ATP_TestCharacter::FireFromWeapon()
 		HitPlayer->HeldBall->GiveTo(this);
 	}
 
+	if (IsValid(HitPlayer) && HitPlayer != this &&
+		IsValid(HitPlayer->HealthComponent))
+	{
+		HitPlayer->HealthComponent->ConsumeStamina(AttackHitStaminaDamage);
+	}
+
 	// Mantiene il comportamento esistente, incluso HitCounter.
 	HitActor->OnActorHit.Broadcast(
 		HitActor, this, FVector::ZeroVector, Hit);
@@ -148,6 +166,19 @@ void ATP_TestCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	AimTimeline.TickTimeline(DeltaTime);
+
+	if (HasBall() && IsValid(HealthComponent))
+	{
+		HealthComponent->ConsumeStamina(StaminaDrainPerSecond * DeltaTime);
+	}
+}
+
+void ATP_TestCharacter::HandleStaminaDepleted()
+{
+	if (IsValid(HeldBall))
+	{
+		HeldBall->Drop();
+	}
 }
 
 /// Input function to override

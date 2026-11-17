@@ -18,6 +18,7 @@ public:
 
 	// Usata sia per la raccolta sia per il furto.
 	bool GiveTo(ATP_TestCharacter* NewHolder);
+	void Drop();
 
 protected:
 	virtual void BeginPlay() override;

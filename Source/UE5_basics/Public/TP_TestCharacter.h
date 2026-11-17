@@ -43,6 +43,15 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health")
 	UTestHealthComponent* HealthComponent;	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float StaminaDrainPerSecond = 5.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float AttackStaminaCost = 10.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float AttackHitStaminaDamage = 20.0f;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Fire")
 	USceneComponent* StartFire;
@@ -129,6 +138,9 @@ public:
 	bool HasBall() const;
 
 private:
+	UFUNCTION()
+	void HandleStaminaDepleted();
+
 	UFUNCTION()
 	void HandleProgressArmLength(float Length);
 	

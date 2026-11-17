@@ -5,11 +5,8 @@
 // Sets default values for this component's properties
 UTestHealthComponent::UTestHealthComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
+	// Set this component to be initialized when the game starts, and to be ticked every frame. 
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 
@@ -44,20 +41,32 @@ void UTestHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 void UTestHealthComponent::GetDamage(int amount)
 {
-	if (amount > 0)
-	{
-		currentHealth = FMath::Clamp(currentHealth - amount, 0, MaxHealth);
+	ConsumeStamina(static_cast<float>(amount));
+}
 
-		// damage taken, reset recovery timer
-		CurrentRecoveryTimer = TimeToStartRecovery;
-		
-		OnDamageTaken.Broadcast();
-		
-		if (currentHealth == 0)
-		{
-			OnHealthToZero.Broadcast();
-		}
+void UTestHealthComponent::ConsumeStamina(float amount)
+{
+	if (amount <= 0.0f || currentHealth <= 0.0f)
+	{
+		return;
 	}
+
+	currentHealth = FMath::Clamp(currentHealth - amount, 0.0f, MaxHealth);
+
+	// damage taken, reset recovery timer
+	CurrentRecoveryTimer = TimeToStartRecovery;
+
+	OnDamageTaken.Broadcast();
+
+	if (currentHealth <= 0.0f)
+	{
+		OnHealthToZero.Broadcast();
+	}
+}
+
+bool UTestHealthComponent::HasStamina(float amount) const
+{
+	return currentHealth > 0.0f && currentHealth >= amount;
 }
 
 void UTestHealthComponent::recoverHealth(float amount)

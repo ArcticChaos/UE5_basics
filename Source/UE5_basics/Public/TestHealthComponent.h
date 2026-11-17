@@ -49,6 +49,12 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void GetDamage(int amount);
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void ConsumeStamina(float amount);
+
+	UFUNCTION(BlueprintPure, Category = "Health")
+	bool HasStamina(float amount) const;
 	
 	UFUNCTION(BlueprintPure, Category = "Health")
 	float GetCurrentHealth() const { return currentHealth; }

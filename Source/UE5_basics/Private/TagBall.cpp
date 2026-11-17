@@ -62,7 +62,9 @@ void ATagBall::HandleBeginOverlap(
 bool ATagBall::GiveTo(ATP_TestCharacter* NewHolder)
 {
 	if (!IsValid(NewHolder) || Holder == NewHolder ||
-		IsValid(NewHolder->HeldBall))
+		IsValid(NewHolder->HeldBall) ||
+		!IsValid(NewHolder->HealthComponent) ||
+		NewHolder->HealthComponent->GetCurrentHealth() <= 0.0f)
 	{
 		return false;	
 	}
@@ -85,4 +87,16 @@ bool ATagBall::GiveTo(ATP_TestCharacter* NewHolder)
 	SetActorRelativeRotation(FRotator::ZeroRotator);
 
 	return true;
+}
+
+void ATagBall::Drop()
+{
+	if (IsValid(Holder))
+	{
+		Holder->HeldBall = nullptr;
+	}
+
+	Holder = nullptr;
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	SetActorEnableCollision(true);
 }

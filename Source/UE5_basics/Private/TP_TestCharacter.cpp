@@ -223,6 +223,24 @@ void ATP_TestCharacter::HandleStaminaDepleted()
 	}
 }
 
+void ATP_TestCharacter::Stun()
+{
+	if (bIsExhausted || !IsValid(HealthComponent))
+	{
+		return;
+	}
+
+	const float CurrentStamina = HealthComponent->GetCurrentHealth();
+	if (CurrentStamina > 0.0f)
+	{
+		HealthComponent->ConsumeStamina(CurrentStamina);
+	}
+	else
+	{
+		HandleStaminaDepleted();
+	}
+}
+
 /// Input function to override
 /// @param PlayerInputComponent 
 void ATP_TestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

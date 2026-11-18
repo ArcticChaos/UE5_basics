@@ -159,6 +159,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Stamina")
 	bool IsExhausted() const { return bIsExhausted; }
 
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	void Stun();
+
 private:
 	UFUNCTION()
 	void HandleStaminaDepleted();

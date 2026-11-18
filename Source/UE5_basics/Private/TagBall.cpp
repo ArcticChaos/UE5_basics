@@ -60,8 +60,22 @@ void ATagBall::BeginPlay()
 void ATagBall::HandleBeginOverlap(
 	AActor* OverlappedActor, AActor* OtherActor)
 {
+	if (bInFlight)
+	{
+		ATP_TestCharacter* HitCharacter = Cast<ATP_TestCharacter>(OtherActor);
+		if (IsValid(HitCharacter) && HitCharacter != LastThrower)
+		{
+			HitCharacter->Stun();
+			bInFlight = false;
+			PickupSphere->SetPhysicsLinearVelocity(FVector::ZeroVector);
+			PickupSphere->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+		}
+
+		return;
+	}
+
 	// Una palla già raccolta si può rubare solo sparando.
-	if (!IsValid(Holder) && !bInFlight)
+	if (!IsValid(Holder))
 	{
 		GiveTo(Cast<ATP_TestCharacter>(OtherActor));
 	}

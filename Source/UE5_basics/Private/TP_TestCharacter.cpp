@@ -340,13 +340,15 @@ void ATP_TestCharacter::DoJumpEnd()
 
 void ATP_TestCharacter::AimIn()
 {
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	bUseControllerRotationYaw = true;
 	AimTimeline.Play();
 }
 
 void ATP_TestCharacter::AimOut()
 {
-	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bUseControllerRotationYaw = false;
 	AimTimeline.Reverse();
 }
 

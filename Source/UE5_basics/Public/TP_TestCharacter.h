@@ -77,6 +77,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void NotifyControllerChanged() override;
 	virtual bool CanJumpInternal_Implementation() const override;
 
 	FTimeline AimTimeline;
@@ -90,6 +91,9 @@ protected:
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* JumpAction;
+
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* FireAction;
 
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")

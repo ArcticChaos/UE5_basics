@@ -61,13 +61,6 @@ ATP_TestCharacter::ATP_TestCharacter()
 void ATP_TestCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
 	if (IsValid(HealthComponent))
 	{
 		HealthComponent->OnHealthToZero.AddDynamic(this, &ATP_TestCharacter::HandleStaminaDepleted);
@@ -85,6 +78,20 @@ void ATP_TestCharacter::BeginPlay()
 		FOnTimelineVector ProgressFunctionOffset;
 		ProgressFunctionOffset.BindUFunction(this, "HandleProgressCameraOffset");
 		AimTimeline.AddInterpVector(OffsetCurve, ProgressFunctionOffset);
+	}
+}
+
+void ATP_TestCharacter::NotifyControllerChanged()
+{
+	Super::NotifyControllerChanged();
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
 	}
 }
 
@@ -253,6 +260,11 @@ void ATP_TestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
+		if (IsValid(FireAction))
+		{
+			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &ATP_TestCharacter::FireFromWeapon);
+		}
+
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);

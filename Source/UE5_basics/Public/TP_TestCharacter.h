@@ -53,8 +53,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
 	float AttackHitStaminaDamage = 20.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina", meta = (ClampMin = "0.0"))
+	float StaminaToRecoverFromExhaustion = 30.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina")
+	bool bIsExhausted = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire", meta = (ClampMin = "0.0"))
 	float AttackRange = 200.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ball", meta = (ClampMin = "0.0"))
+	float ThrowSpeed = 1500.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ball", meta = (ClampMin = "0.0", ClampMax = "89.0"))
+	float ThrowPitchAngle = 10.0f;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Fire")
 	USceneComponent* StartFire;
@@ -62,6 +74,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual bool CanJumpInternal_Implementation() const override;
 
 	FTimeline AimTimeline;
 
@@ -142,6 +155,9 @@ public:
 	
 	UFUNCTION(BlueprintPure, Category = "Ball")
 	bool HasBall() const;
+
+	UFUNCTION(BlueprintPure, Category = "Stamina")
+	bool IsExhausted() const { return bIsExhausted; }
 
 private:
 	UFUNCTION()

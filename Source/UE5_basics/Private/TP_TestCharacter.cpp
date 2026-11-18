@@ -8,6 +8,7 @@
 #include "TestHealthComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -70,6 +71,10 @@ void ATP_TestCharacter::BeginPlay()
 	if (IsValid(HealthComponent))
 	{
 		HealthComponent->OnHealthToZero.AddDynamic(this, &ATP_TestCharacter::HandleStaminaDepleted);
+		if (HealthComponent->GetCurrentHealth() <= 0.0f)
+		{
+			HandleStaminaDepleted();
+		}
 	}
 	if (MovementCurve && OffsetCurve) 
 	{
@@ -97,11 +102,32 @@ void ATP_TestCharacter::FireFromWeapon()
 
 void ATP_TestCharacter::ThrowBall()
 {
-	// TODO step 3: lancio della palla.
+	if (!IsValid(HeldBall))
+	{
+		return;
+	}
+
+	const FRotator ThrowRotation(
+		ThrowPitchAngle,
+		GetActorRotation().Yaw,
+		0.0f);
+	ATagBall* Ball = HeldBall;
+	Ball->Release(true);
+
+	if (UPrimitiveComponent* BallRoot = Cast<UPrimitiveComponent>(Ball->GetRootComponent()))
+	{
+		BallRoot->AddImpulse(
+			ThrowRotation.Vector() * FMath::Max(0.0f, ThrowSpeed), NAME_None, true);
+	}
 }
 
 void ATP_TestCharacter::Attack()
 {
+	if (bIsExhausted)
+	{
+		return;
+	}
+
 	UWorld* World = GetWorld();
 	if (!IsValid(World) || !IsValid(StartFire))
 	{
@@ -168,6 +194,18 @@ void ATP_TestCharacter::Tick(float DeltaTime)
 
 	AimTimeline.TickTimeline(DeltaTime);
 
+	if (bIsExhausted && IsValid(HealthComponent))
+	{
+		const float MaxStamina = FMath::Max(0.0f, HealthComponent->GetMaxHealth());
+		const float RecoveryThreshold = FMath::Clamp(
+			StaminaToRecoverFromExhaustion, 0.0f, MaxStamina);
+		if (HealthComponent->GetCurrentHealth() > 0.0f &&
+			HealthComponent->GetCurrentHealth() >= RecoveryThreshold)
+		{
+			bIsExhausted = false;
+		}
+	}
+
 	if (HasBall() && IsValid(HealthComponent))
 	{
 		HealthComponent->ConsumeStamina(StaminaDrainPerSecond * DeltaTime);
@@ -176,6 +214,9 @@ void ATP_TestCharacter::Tick(float DeltaTime)
 
 void ATP_TestCharacter::HandleStaminaDepleted()
 {
+	bIsExhausted = true;
+	GetCharacterMovement()->StopMovementImmediately();
+
 	if (IsValid(HeldBall))
 	{
 		HeldBall->Drop();
@@ -229,7 +270,7 @@ void ATP_TestCharacter::Look(const FInputActionValue& Value)
 
 void ATP_TestCharacter::DoMove(float Right, float Forward)
 {
-	if (GetController() != nullptr)
+	if (!bIsExhausted && GetController() != nullptr)
 	{
 		// find out which way is forward
 		const FRotator Rotation = GetController()->GetControlRotation();
@@ -245,6 +286,11 @@ void ATP_TestCharacter::DoMove(float Right, float Forward)
 		AddMovementInput(ForwardDirection, Forward);
 		AddMovementInput(RightDirection, Right);
 	}
+}
+
+bool ATP_TestCharacter::CanJumpInternal_Implementation() const
+{
+	return !bIsExhausted && Super::CanJumpInternal_Implementation();
 }
 
 void ATP_TestCharacter::DoLook(float Yaw, float Pitch)

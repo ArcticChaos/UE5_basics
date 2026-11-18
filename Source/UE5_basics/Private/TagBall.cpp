@@ -12,10 +12,17 @@ ATagBall::ATagBall()
 	SetRootComponent(PickupSphere);
 
 	PickupSphere->InitSphereRadius(75.0f);
-	PickupSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	PickupSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	PickupSphere->SetCollisionObjectType(ECC_WorldDynamic);
 	PickupSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
+	PickupSphere->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	PickupSphere->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
+	PickupSphere->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Block);
 	PickupSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	PickupSphere->SetGenerateOverlapEvents(true);
+	PickupSphere->SetNotifyRigidBodyCollision(true);
+	PickupSphere->SetUseCCD(true);
+	PickupSphere->SetSimulatePhysics(false);
 
 	BallMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BallMesh"));
 	BallMesh->SetupAttachment(PickupSphere);
@@ -27,6 +34,7 @@ void ATagBall::BeginPlay()
 	Super::BeginPlay();
 
 	OnActorBeginOverlap.AddDynamic(this, &ATagBall::HandleBeginOverlap);
+	PickupSphere->OnComponentHit.AddDynamic(this, &ATagBall::HandleHit);
 
 	// Gestisce anche un player già sopra la palla all'avvio.
 	PickupSphere->UpdateOverlaps();
@@ -53,7 +61,7 @@ void ATagBall::HandleBeginOverlap(
 	AActor* OverlappedActor, AActor* OtherActor)
 {
 	// Una palla già raccolta si può rubare solo sparando.
-	if (!IsValid(Holder))
+	if (!IsValid(Holder) && !bInFlight)
 	{
 		GiveTo(Cast<ATP_TestCharacter>(OtherActor));
 	}
@@ -63,11 +71,17 @@ bool ATagBall::GiveTo(ATP_TestCharacter* NewHolder)
 {
 	if (!IsValid(NewHolder) || Holder == NewHolder ||
 		IsValid(NewHolder->HeldBall) ||
+		NewHolder->IsExhausted() ||
 		!IsValid(NewHolder->HealthComponent) ||
 		NewHolder->HealthComponent->GetCurrentHealth() <= 0.0f)
 	{
-		return false;	
+		return false;
 	}
+
+	PickupSphere->SetSimulatePhysics(false);
+	PickupSphere->SetPhysicsLinearVelocity(FVector::ZeroVector);
+	PickupSphere->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+	bInFlight = false;
 
 	if (IsValid(Holder))
 	{
@@ -91,12 +105,41 @@ bool ATagBall::GiveTo(ATP_TestCharacter* NewHolder)
 
 void ATagBall::Drop()
 {
+	Release(false);
+}
+
+void ATagBall::Release(bool bLaunched)
+{
 	if (IsValid(Holder))
 	{
+		if (bLaunched)
+		{
+			LastThrower = Holder;
+		}
+
 		Holder->HeldBall = nullptr;
 	}
 
 	Holder = nullptr;
+	bInFlight = bLaunched;
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	SetActorEnableCollision(true);
+	PickupSphere->SetPhysicsLinearVelocity(FVector::ZeroVector);
+	PickupSphere->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+	PickupSphere->SetSimulatePhysics(true);
+}
+
+void ATagBall::HandleHit(
+	UPrimitiveComponent* HitComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComponent,
+	FVector NormalImpulse,
+	const FHitResult& Hit)
+{
+	if (bInFlight)
+	{
+		bInFlight = false;
+		PickupSphere->SetPhysicsLinearVelocity(FVector::ZeroVector);
+		PickupSphere->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+	}
 }

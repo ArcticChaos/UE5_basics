@@ -85,6 +85,23 @@ void ATP_TestCharacter::BeginPlay()
 
 void ATP_TestCharacter::FireFromWeapon()
 {
+	if (HasBall())
+	{
+		ThrowBall();
+	}
+	else
+	{
+		Attack();
+	}
+}
+
+void ATP_TestCharacter::ThrowBall()
+{
+	// TODO step 3: lancio della palla.
+}
+
+void ATP_TestCharacter::Attack()
+{
 	UWorld* World = GetWorld();
 	if (!IsValid(World) || !IsValid(StartFire))
 	{
@@ -102,15 +119,9 @@ void ATP_TestCharacter::FireFromWeapon()
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);
 
-	// La palla non deve intercettare il trace del portatore.
-	if (IsValid(HeldBall))
-	{
-		Params.AddIgnoredActor(HeldBall);
-	}
-
 	const FVector Start = StartFire->GetComponentLocation();
 	const FVector Direction = StartFire->GetForwardVector();
-	const FVector End = Start + Direction * 2000.0f;
+	const FVector End = Start + Direction * FMath::Max(0.0f, AttackRange);
 
 	FHitResult Hit;
 	const bool bHit = World->LineTraceSingleByChannel(
@@ -143,16 +154,6 @@ void ATP_TestCharacter::FireFromWeapon()
 	{
 		HitPlayer->HealthComponent->ConsumeStamina(AttackHitStaminaDamage);
 	}
-
-	// Mantiene il comportamento esistente, incluso HitCounter.
-	HitActor->OnActorHit.Broadcast(
-		HitActor, this, FVector::ZeroVector, Hit);
-}
-
-void ATP_TestCharacter::TryStealBall()
-{
-	// Un solo trace: non duplicare la logica dello sparo.
-	FireFromWeapon();
 }
 
 bool ATP_TestCharacter::HasBall() const

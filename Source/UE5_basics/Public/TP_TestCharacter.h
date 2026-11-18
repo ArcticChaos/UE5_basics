@@ -52,6 +52,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
 	float AttackHitStaminaDamage = 20.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire", meta = (ClampMin = "0.0"))
+	float AttackRange = 200.0f;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Fire")
 	USceneComponent* StartFire;
@@ -95,8 +98,11 @@ protected:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	void FireFromWeapon();	
 	
-	UFUNCTION(BlueprintCallable, Category="Ball")
-	void TryStealBall();
+	// Senza palla: trace a corto raggio (furto + danno stamina).
+	void Attack();
+
+	// Con la palla: lancio (step 3).
+	void ThrowBall();
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Ball")
 	ATagBall* HeldBall = nullptr;

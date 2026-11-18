@@ -1,5 +1,6 @@
 #include "Other/HitCounter.h"
 
+#include "TagBall.h"
 #include "TP_TestCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Engine/Engine.h"
@@ -15,6 +16,7 @@ AHitCounter::AHitCounter()
 	HitBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	HitBox->SetCollisionResponseToAllChannels(ECR_Block);
 	HitBox->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	HitBox->SetNotifyRigidBodyCollision(true);
 }
 
 void AHitCounter::BeginPlay()
@@ -35,14 +37,24 @@ void AHitCounter::HandleActorHit(
 	FVector NormalImpulse,
 	const FHitResult& Hit)
 {
-	const ATP_TestCharacter* Player = Cast<ATP_TestCharacter>(OtherActor);
+	RegisterBallHit(Cast<ATagBall>(OtherActor));
+}
 
-	if (!IsValid(Player) || !Player->HasBall())
+void AHitCounter::RegisterBallHit(ATagBall* Ball)
+{
+	if (!IsValid(Ball) || !Ball->IsInFlight())
 	{
 		return;
 	}
 
 	++HitCount;
+
+	if (ATP_TestCharacter* Thrower = Ball->GetLastThrower(); IsValid(Thrower))
+	{
+		Thrower->AddScore(1);
+	}
+
+	Ball->Explode();
 
 	if (GEngine)
 	{

@@ -3,6 +3,7 @@
 #include "TP_TestCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Other/HitCounter.h"
 
 ATagBall::ATagBall()
 {
@@ -152,8 +153,27 @@ void ATagBall::HandleHit(
 {
 	if (bInFlight)
 	{
+		if (AHitCounter* HitCounter = Cast<AHitCounter>(OtherActor))
+		{
+			HitCounter->RegisterBallHit(this);
+			return;
+		}
+
 		bInFlight = false;
 		PickupSphere->SetPhysicsLinearVelocity(FVector::ZeroVector);
 		PickupSphere->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
 	}
+}
+
+void ATagBall::Explode()
+{
+	if (IsValid(Holder))
+	{
+		Holder->HeldBall = nullptr;
+	}
+
+	Holder = nullptr;
+	LastThrower = nullptr;
+	bInFlight = false;
+	Destroy();
 }

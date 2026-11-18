@@ -7,6 +7,8 @@
 #include "GameFramework/Actor.h"
 #include "HitCounter.generated.h"
 
+class ATagBall;
+
 UCLASS()
 class UE5_BASICS_API AHitCounter : public AActor
 {
@@ -19,6 +21,8 @@ public:
 	UFUNCTION()
 	void HandleActorHit(AActor* SelfActor, AActor* OtherActor,
 						FVector NormalImpulse, const FHitResult& Hit);
+
+	void RegisterBallHit(ATagBall* Ball);
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UBoxComponent* HitBox;

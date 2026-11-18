@@ -21,6 +21,7 @@ public:
 	bool GiveTo(ATP_TestCharacter* NewHolder);
 	void Drop();
 	void Release(bool bLaunched);
+	void Explode();
 
 	UFUNCTION(BlueprintPure, Category = "Ball")
 	bool IsInFlight() const { return bInFlight; }

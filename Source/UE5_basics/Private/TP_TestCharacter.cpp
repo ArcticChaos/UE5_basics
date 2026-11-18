@@ -241,6 +241,11 @@ void ATP_TestCharacter::Stun()
 	}
 }
 
+void ATP_TestCharacter::AddScore(int32 Amount)
+{
+	Score += Amount;
+}
+
 /// Input function to override
 /// @param PlayerInputComponent 
 void ATP_TestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

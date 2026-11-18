@@ -59,9 +59,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina")
 	bool bIsExhausted = false;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Score")
-	int32 Score = 0;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire", meta = (ClampMin = "0.0"))
 	float AttackRange = 200.0f;
 
@@ -169,8 +166,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Stamina")
 	void Stun();
 
-	UFUNCTION(BlueprintCallable, Category = "Score")
-	void AddScore(int32 Amount);
+	UFUNCTION(BlueprintCallable, Category = "Soccer|Team")
+	void SetTeamColor(const FLinearColor& TeamColor);
+
+	UFUNCTION(BlueprintPure, Category = "Score")
+	int32 GetScore() const;
 
 private:
 	UFUNCTION()

@@ -1,9 +1,13 @@
 #include "Other/HitCounter.h"
 
 #include "TagBall.h"
+#include "SoccerSubsystem.h"
 #include "TP_TestCharacter.h"
 #include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/Engine.h"
+#include "Engine/World.h"
 
 AHitCounter::AHitCounter()
 {
@@ -17,6 +21,9 @@ AHitCounter::AHitCounter()
 	HitBox->SetCollisionResponseToAllChannels(ECR_Block);
 	HitBox->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	HitBox->SetNotifyRigidBodyCollision(true);
+
+	GoalMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GoalMesh"));
+	GoalMesh->SetupAttachment(HitBox);
 }
 
 void AHitCounter::BeginPlay()
@@ -40,6 +47,26 @@ void AHitCounter::HandleActorHit(
 	RegisterBallHit(Cast<ATagBall>(OtherActor));
 }
 
+void AHitCounter::SetGoalOwner(ATP_TestCharacter* InOwner, const FLinearColor& TeamColor)
+{
+	GoalOwner = InOwner;
+
+	if (IsValid(GoalMesh))
+	{
+		const int32 NumMaterials = GoalMesh->GetNumMaterials();
+		for (int32 MatIdx = 0; MatIdx < NumMaterials; ++MatIdx)
+		{
+			UMaterialInstanceDynamic* DynMaterial = GoalMesh->CreateAndSetMaterialInstanceDynamic(MatIdx);
+			if (IsValid(DynMaterial))
+			{
+				DynMaterial->SetVectorParameterValue(TEXT("Color"), TeamColor);
+				DynMaterial->SetVectorParameterValue(TEXT("BaseColor"), TeamColor);
+				DynMaterial->SetVectorParameterValue(TEXT("Tint"), TeamColor);
+			}
+		}
+	}
+}
+
 void AHitCounter::RegisterBallHit(ATagBall* Ball)
 {
 	if (!IsValid(Ball) || !Ball->IsInFlight())
@@ -49,12 +76,13 @@ void AHitCounter::RegisterBallHit(ATagBall* Ball)
 
 	++HitCount;
 
-	if (ATP_TestCharacter* Thrower = Ball->GetLastThrower(); IsValid(Thrower))
+	if (UWorld* World = GetWorld())
 	{
-		Thrower->AddScore(1);
+		if (USoccerSubsystem* SoccerSubsystem = World->GetSubsystem<USoccerSubsystem>())
+		{
+			SoccerSubsystem->RegisterGoalFromBall(Ball, this, 1);
+		}
 	}
-
-	Ball->Explode();
 
 	if (GEngine)
 	{

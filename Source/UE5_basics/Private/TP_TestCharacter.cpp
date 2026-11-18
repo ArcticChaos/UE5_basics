@@ -3,6 +3,7 @@
 
 #include "TP_TestCharacter.h"
 #include "TagBall.h"
+#include "SoccerSubsystem.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "TestHealthComponent.h"
@@ -12,6 +13,7 @@
 #include "Components/TimelineComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Kismet/GameplayStatics.h"
 #include "UE5_basics/Enemy/Enemy.h"
 class UEnhancedInputLocalPlayerSubsystem;
@@ -248,9 +250,35 @@ void ATP_TestCharacter::Stun()
 	}
 }
 
-void ATP_TestCharacter::AddScore(int32 Amount)
+void ATP_TestCharacter::SetTeamColor(const FLinearColor& TeamColor)
 {
-	Score += Amount;
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	if (IsValid(MeshComp))
+	{
+		const int32 NumMaterials = MeshComp->GetNumMaterials();
+		for (int32 MatIdx = 0; MatIdx < NumMaterials; ++MatIdx)
+		{
+			UMaterialInstanceDynamic* DynMaterial = MeshComp->CreateAndSetMaterialInstanceDynamic(MatIdx);
+			if (IsValid(DynMaterial))
+			{
+				DynMaterial->SetVectorParameterValue(TEXT("Color"), TeamColor);
+				DynMaterial->SetVectorParameterValue(TEXT("BaseColor"), TeamColor);
+				DynMaterial->SetVectorParameterValue(TEXT("Tint"), TeamColor);
+			}
+		}
+	}
+}
+
+int32 ATP_TestCharacter::GetScore() const
+{
+	if (const UWorld* World = GetWorld())
+	{
+		if (const USoccerSubsystem* Subsystem = World->GetSubsystem<USoccerSubsystem>())
+		{
+			return Subsystem->GetScoreForPlayer(this);
+		}
+	}
+	return 0;
 }
 
 /// Input function to override

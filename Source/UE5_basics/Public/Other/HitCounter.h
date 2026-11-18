@@ -8,6 +8,8 @@
 #include "HitCounter.generated.h"
 
 class ATagBall;
+class ATP_TestCharacter;
+class UStaticMeshComponent;
 
 UCLASS()
 class UE5_BASICS_API AHitCounter : public AActor
@@ -23,9 +25,22 @@ public:
 						FVector NormalImpulse, const FHitResult& Hit);
 
 	void RegisterBallHit(ATagBall* Ball);
+
+	// Imposta il player difensore e il colore associato
+	UFUNCTION(BlueprintCallable, Category = "Soccer|Team")
+	void SetGoalOwner(ATP_TestCharacter* InOwner, const FLinearColor& TeamColor);
+
+	UFUNCTION(BlueprintPure, Category = "Soccer|Team")
+	ATP_TestCharacter* GetGoalOwner() const { return GoalOwner; }
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UBoxComponent* HitBox;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* GoalMesh;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Soccer|Team")
+	ATP_TestCharacter* GoalOwner = nullptr;
 	
 	int HitCount = 0;	
 
